@@ -1,0 +1,43 @@
+import swapper
+from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericStackedInline, GenericTabularInline
+
+from baseapp_pages.models import Metadata, URLPath
+
+Page = swapper.load_model("baseapp_pages", "Page")
+
+
+class URLPathAdminInline(GenericTabularInline):
+    model = URLPath
+    extra = 0
+    ct_field = "target_content_type"
+    ct_fk_field = "target_object_id"
+
+
+@admin.register(URLPath)
+class URLPathAdmin(admin.ModelAdmin):
+    search_fields = ("path",)
+    list_display = ("id", "path", "target_content_type", "target_object_id", "created")
+    list_filter = ("target_content_type",)
+
+
+class MetadataAdminInline(GenericStackedInline):
+    model = Metadata
+    extra = 0
+    ct_field = "target_content_type"
+    ct_fk_field = "target_object_id"
+
+
+@admin.register(Page)
+class PageAdmin(admin.ModelAdmin):
+    search_fields = ("title", "body")
+    raw_id_fields = ("user",)
+    list_display = ("id", "title", "created", "modified")
+    inlines = [URLPathAdminInline, MetadataAdminInline]
+
+
+# @admin.register(Metadata)
+# class MetadataAdmin(admin.ModelAdmin):
+#     raw_id_fields = ("url_path",)
+#     search_fields = ("title", "description")
+#     list_display = ("url_path", "title", "created", "modified")
